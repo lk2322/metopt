@@ -19,9 +19,7 @@ import copy
 from typing import List, Optional, Tuple
 
 
-# ===============================
 # Основной класс решателя
-# ===============================
 class TwoPhaseSimplex:
     def __init__(self, num_vars: int, A: List[List[float]], signs: List[str],
                  b: List[float], c: List[float], sense: str = 'max'):
@@ -49,9 +47,7 @@ class TwoPhaseSimplex:
         self.basic_vars = []
         self.artificial_indices = set()
 
-    # =======================================================
     # Приведение задачи к каноническому виду и построение таблицы
-    # =======================================================
     def _build_tableau(self):
         m = self.m
         n = self.n
@@ -141,9 +137,7 @@ class TwoPhaseSimplex:
         self.total_vars = total_vars
         self.phase1_obj = obj
 
-    # =======================================================
     # Элементарная операция — поворот таблицы
-    # =======================================================
     def _pivot(self, tab, obj, basic_vars, enter_col, leave_row):
         m = len(tab)
         total_vars = len(tab[0]) - 1
@@ -173,9 +167,7 @@ class TwoPhaseSimplex:
         # Меняем базис
         basic_vars[leave_row] = enter_col
 
-    # =======================================================
     # Выбор входящей переменной (по наибольшему положительному коэф.)
-    # =======================================================
     def _choose_entering(self, obj) -> Optional[int]:
         best_val = 0.0
         best_j = None
@@ -185,9 +177,7 @@ class TwoPhaseSimplex:
                 best_j = j
         return best_j
 
-    # =======================================================
     # Выбор выходящей переменной (по минимальному отношению)
-    # =======================================================
     def _choose_leaving(self, tab, enter_col) -> Optional[int]:
         m = len(tab)
         min_ratio = None
@@ -203,9 +193,7 @@ class TwoPhaseSimplex:
                     leave_row = i
         return leave_row
 
-    # =======================================================
     # Общий симплекс-цикл
-    # =======================================================
     def _simplex(self, tab, obj, basic_vars, max_iters=5000):
         m = len(tab)
         total_vars = len(tab[0]) - 1
@@ -233,9 +221,7 @@ class TwoPhaseSimplex:
 
             self._pivot(tab, obj, basic_vars, enter, leave)
 
-    # =======================================================
     # Основная функция решения
-    # =======================================================
     def solve(self):
         # Фаза I — проверка выполнимости
         self._build_tableau()
@@ -243,7 +229,7 @@ class TwoPhaseSimplex:
         obj = self.phase1_obj[:]
         basic_vars = self.basic_vars[:]
 
-        status, x_all, val = self._simplex(tab, obj, basic_vars)
+        status, _, _ = self._simplex(tab, obj, basic_vars)
 
         if status == "unbounded":
             return {"status": "unbounded", "reason": "Phase I unbounded (unexpected)"}
@@ -294,7 +280,7 @@ class TwoPhaseSimplex:
                         phase2_obj[j] -= cb * new_tab[i][j]
 
         # Запускаем симплекс для основной задачи
-        status2, x_final, val2 = self._simplex(new_tab, phase2_obj, new_basic)
+        status2, x_final, _ = self._simplex(new_tab, phase2_obj, new_basic)
 
         if status2 == "optimal":
             # Извлекаем решение только по исходным переменным x1...xn
